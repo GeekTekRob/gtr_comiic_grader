@@ -24,23 +24,13 @@ fi
 echo "✓ Node.js $(node --version) found"
 echo ""
 
-# Install root dependencies
-echo "Installing dependencies..."
-npm install
+# Launch setup wizard (handles installation)
+echo "Launching setup wizard..."
+node setup.js
 if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to install dependencies"
+    echo "ERROR: Setup failed"
     exit 1
 fi
-
-echo ""
-echo "Installing client dependencies..."
-cd client
-npm install
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to install client dependencies"
-    exit 1
-fi
-cd ..
 
 echo ""
 echo "=========================================="

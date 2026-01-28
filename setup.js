@@ -42,23 +42,35 @@ async function main() {
 
     // Step 2: Install dependencies
     console.log('📦 Installing dependencies...');
-    console.log('(This may take a couple minutes)\n');
+    
+    const rootModules = path.join(__dirname, 'node_modules');
+    const clientModules = path.join(__dirname, 'client', 'node_modules');
 
-    try {
-      execSync('npm install', { stdio: 'inherit', cwd: __dirname });
-      console.log('\n✅ Root dependencies installed');
-    } catch (e) {
-      console.log('❌ Failed to install root dependencies');
-      process.exit(1);
-    }
+    if (fs.existsSync(rootModules) && fs.existsSync(clientModules)) {
+      console.log('✅ Dependencies already installed. Skipping...');
+    } else {
+      console.log('(This may take a couple minutes)\n');
 
-    try {
-      const clientDir = path.join(__dirname, 'client');
-      execSync('npm install', { stdio: 'inherit', cwd: clientDir });
-      console.log('✅ Client dependencies installed\n');
-    } catch (e) {
-      console.log('❌ Failed to install client dependencies');
-      process.exit(1);
+      if (!fs.existsSync(rootModules)) {
+        try {
+          execSync('npm install', { stdio: 'inherit', cwd: __dirname });
+          console.log('\n✅ Root dependencies installed');
+        } catch (e) {
+          console.log('❌ Failed to install root dependencies');
+          process.exit(1);
+        }
+      }
+
+      if (!fs.existsSync(clientModules)) {
+        try {
+          const clientDir = path.join(__dirname, 'client');
+          execSync('npm install', { stdio: 'inherit', cwd: clientDir });
+          console.log('✅ Client dependencies installed\n');
+        } catch (e) {
+          console.log('❌ Failed to install client dependencies');
+          process.exit(1);
+        }
+      }
     }
 
     // Step 3: Ask about AI providers
@@ -69,6 +81,7 @@ async function main() {
     const gemini = await question('✨ Use Google Gemini (fastest, free tier)? [Y/n]: ');
     const openai = await question('🟢 Use OpenAI GPT-4o? [y/N]: ');
     const anthropic = await question('🟣 Use Anthropic Claude? [y/N]: ');
+    const ollama = await question('🦙 Use local Ollama (Free, private, requires local setup)? [y/N]: ');
 
     // Step 4: Collect API keys
     const env = {
@@ -105,10 +118,21 @@ async function main() {
       if (key) env.ANTHROPIC_API_KEY = key;
     }
 
+    if (ollama.toLowerCase() === 'y') {
+      console.log('\nLocal Ollama:');
+      console.log('  1. Install Ollama from https://ollama.ai');
+      console.log('  2. Run: ollama pull llama3-vision');
+      const url = await question('Ollama URL (default: http://localhost:11434): ');
+      if (url) env.OLLAMA_API_URL = url;
+    }
+
     // Check if at least one provider is configured
-    const providers = [env.GEMINI_API_KEY, env.OPENAI_API_KEY, env.ANTHROPIC_API_KEY].filter(
-      Boolean
-    ).length;
+    const providers = [
+      env.GEMINI_API_KEY, 
+      env.OPENAI_API_KEY, 
+      env.ANTHROPIC_API_KEY,
+      ollama.toLowerCase() === 'y'
+    ].filter(Boolean).length;
 
     if (providers === 0) {
       console.log(

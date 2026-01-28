@@ -17,6 +17,7 @@ dotenv.config();
 import * as geminiHandler from './api/gemini.js';
 import * as openaiHandler from './api/openai.js';
 import * as anthropicHandler from './api/anthropic.js';
+import * as ollamaHandler from './api/ollama.js';
 
 // Import utilities
 import { upload, validateFiles } from './utils/fileUpload.js';
@@ -41,14 +42,17 @@ app.use(express.static(clientBuildPath));
  * GET /api/health
  * Health check endpoint
  */
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  const ollamaStatus = await ollamaHandler.isConfigured();
   res.json({
     status: 'ok',
     providers: {
       gemini: geminiHandler.isConfigured(),
       openai: openaiHandler.isConfigured(),
       anthropic: anthropicHandler.isConfigured(),
+      ollama: ollamaStatus.enabled,
     },
+    ollama: ollamaStatus,
     timestamp: new Date().toISOString(),
   });
 });
@@ -61,14 +65,15 @@ app.get('/api/health', (req, res) => {
  * {
  *   comicName: string,
  *   issueNumber: string|number,
- *   aiProvider: 'gemini' | 'openai' | 'anthropic',
+ *   aiProvider: 'gemini' | 'openai' | 'anthropic' | 'ollama',
+ *   ollamaModel?: string (for ollama provider),
  *   images: File[] (multipart form data)
  * }
  */
 app.post('/api/grade', upload.array('images', 10), async (req, res) => {
   try {
     // Validate request
-    const { comicName, issueNumber, aiProvider } = req.body;
+    const { comicName, issueNumber, aiProvider, ollamaModel } = req.body;
 
     if (!comicName || !issueNumber || !aiProvider) {
       return res.status(400).json({
@@ -140,11 +145,28 @@ app.post('/api/grade', upload.array('images', 10), async (req, res) => {
         });
         break;
 
+      case 'ollama':
+        const ollamaStatus = await ollamaHandler.isConfigured();
+        if (!ollamaStatus.enabled) {
+          return res.status(400).json({
+            success: false,
+            error: 'Ollama is not configured or not running',
+            details: ollamaStatus.error,
+          });
+        }
+        aiResult = await ollamaHandler.gradeComic({
+          comicName,
+          issueNumber,
+          images: req.files.map((f) => f.buffer),
+          model: ollamaModel,
+        });
+        break;
+
       default:
         return res.status(400).json({
           success: false,
           error: `Unknown AI provider: ${aiProvider}`,
-          availableProviders: ['gemini', 'openai', 'anthropic'],
+          availableProviders: ['gemini', 'openai', 'anthropic', 'ollama'],
         });
     }
 
@@ -249,6 +271,23 @@ app.post('/api/grade/batch', upload.array('images', 10), async (req, res) => {
             });
             break;
 
+          case 'ollama':
+            const ollamaStatus = await ollamaHandler.isConfigured();
+            if (!ollamaStatus.enabled) {
+              results.push({
+                provider: 'Ollama',
+                error: 'Not configured or not running',
+              });
+              break;
+            }
+            aiResult = await ollamaHandler.gradeComic({
+              comicName,
+              issueNumber,
+              images,
+              model: process.env.OLLAMA_MODEL || 'llama3-vision',
+            });
+            break;
+
           default:
             results.push({
               provider,
@@ -301,7 +340,8 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  const ollamaStatus = await ollamaHandler.isConfigured();
   console.log(`
 ╔════════════════════════════════════════╗
 ║   GTR Comic Grader - Server Started    ║
@@ -312,6 +352,7 @@ app.listen(PORT, () => {
 ║   - Gemini: ${geminiHandler.isConfigured() ? '✓ Configured' : '✗ Not configured'}
 ║   - OpenAI: ${openaiHandler.isConfigured() ? '✓ Configured' : '✗ Not configured'}
 ║   - Anthropic: ${anthropicHandler.isConfigured() ? '✓ Configured' : '✗ Not configured'}
+║   - Ollama: ${ollamaStatus.enabled ? `✓ Connected (${ollamaStatus.modelCount} models)` : '✗ Not running'}
 ╚════════════════════════════════════════╝
 
 API Endpoints:

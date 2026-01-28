@@ -10,9 +10,17 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let client = null;
+
+// Lazy initialize client only when needed
+function getClient() {
+  if (!client && process.env.OPENAI_API_KEY) {
+    client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return client;
+}
 
 let systemPrompt = '';
 
@@ -52,6 +60,11 @@ export async function gradeComic(params) {
       throw new Error('No images provided for grading');
     }
 
+    const apiClient = getClient();
+    if (!apiClient) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
     // Prepare message content
     const content = [
       {
@@ -72,7 +85,7 @@ export async function gradeComic(params) {
       });
     }
 
-    const response = await client.chat.completions.create({
+    const response = await apiClient.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o',
       max_tokens: 2000,
       messages: [
