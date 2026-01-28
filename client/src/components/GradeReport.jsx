@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-export function GradeReport({ report }) {
+export function GradeReport({ report, comicName, issueNumber, coverImage }) {
+  const [coverUrl, setCoverUrl] = useState('');
+
+  useEffect(() => {
+    if (coverImage) {
+      const url = URL.createObjectURL(coverImage);
+      setCoverUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [coverImage]);
+
   if (!report || !report.success) {
     return (
       <div className="report error">
@@ -14,6 +24,18 @@ export function GradeReport({ report }) {
 
   return (
     <div className="report success">
+      <div className="report-header-info">
+        {coverUrl && (
+          <div className="report-cover-image">
+             <img src={coverUrl} alt="Comic Cover" />
+          </div>
+        )}
+        <div className="report-title-section">
+            <h1>{comicName}</h1>
+            <h2>Issue #{issueNumber}</h2>
+        </div>
+      </div>
+
       <div className="grade-header">
         <div className="grade-display">
           <div className="grade-number">{grade}</div>

@@ -49,7 +49,9 @@ export async function gradeComic(params) {
       throw new Error('No images provided for grading');
     }
 
-    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = client.getGenerativeModel({ 
+      model: process.env.GEMINI_MODEL || 'gemini-1.5-flash' 
+    });
 
     // Prepare content parts
     const contentParts = [

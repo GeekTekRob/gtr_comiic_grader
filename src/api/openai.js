@@ -72,8 +72,8 @@ export async function gradeComic(params) {
       });
     }
 
-    const response = await client.messages.create({
-      model: 'gpt-4o',
+    const response = await client.chat.completions.create({
+      model: process.env.OPENAI_MODEL || 'gpt-4o',
       max_tokens: 2000,
       messages: [
         {
@@ -83,7 +83,7 @@ export async function gradeComic(params) {
       ],
     });
 
-    const textResponse = response.content[0].text;
+    const textResponse = response.choices[0].message.content;
 
     return {
       success: true,

@@ -5,16 +5,22 @@ import { GradeReport } from './components/GradeReport';
 import { SaveReport } from './components/SaveReport';
 import { useGrader } from './hooks/useGrader';
 import { checkHealth } from './api';
-import './App.css';
 
 export function App() {
   const [comicName, setComicName] = useState('');
   const [issueNumber, setIssueNumber] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
-  const [selectedImages, setSelectedImages] = useState([]);
+  
+  // New separated image states
+  const [coverImages, setCoverImages] = useState([]);
+  const [spineImages, setSpineImages] = useState([]);
+  const [backImages, setBackImages] = useState([]);
+  const [pageImages, setPageImages] = useState([]);
+  
   const [availableProviders, setAvailableProviders] = useState(null);
+  const [formKey, setFormKey] = useState(0); // For resetting form components
 
-  const { loading, error, report, progress, submitGradingRequest, clearError } = useGrader();
+  const { loading, error, report, progress, submitGradingRequest, clearError, clearReport } = useGrader();
 
   // Check available providers on mount
   useEffect(() => {
@@ -22,6 +28,15 @@ export function App() {
       try {
         const health = await checkHealth();
         setAvailableProviders(health.providers);
+
+        // Auto-select if only one provider is available
+        const activeProviders = Object.entries(health.providers)
+          .filter(([_, isActive]) => isActive)
+          .map(([key]) => key);
+
+        if (activeProviders.length === 1) {
+          setSelectedProvider(activeProviders[0]);
+        }
       } catch (err) {
         console.error('Failed to check providers:', err);
       }
@@ -48,8 +63,8 @@ export function App() {
       return;
     }
 
-    if (selectedImages.length === 0) {
-      alert('Please select at least one image');
+    if (coverImages.length === 0) {
+      alert('Cover Image is required');
       return;
     }
 
@@ -58,7 +73,16 @@ export function App() {
     formData.append('issueNumber', issueNumber);
     formData.append('aiProvider', selectedProvider);
 
-    selectedImages.forEach((img) => {
+    // Combine images ensuring Cover is first
+    const allImages = [...coverImages, ...spineImages, ...backImages, ...pageImages];
+
+    // Minimal validation to ensure we have something
+    if (allImages.length === 0) {
+         alert('Please follow the upload validation steps.');
+         return;
+    }
+
+    allImages.forEach((img) => {
       formData.append('images', img);
     });
 
@@ -69,8 +93,13 @@ export function App() {
     setComicName('');
     setIssueNumber('');
     setSelectedProvider('');
-    setSelectedImages([]);
+    setCoverImages([]);
+    setSpineImages([]);
+    setBackImages([]);
+    setPageImages([]);
+    setFormKey(prev => prev + 1); // Force remount of uploaders
     clearError();
+    clearReport(); // Ensure we go back to form
   };
 
   return (
@@ -121,17 +150,47 @@ export function App() {
                 <AISelector
                   selectedProvider={selectedProvider}
                   onProviderChange={setSelectedProvider}
-                  disabled={loading}
+                  disabled={loading || (availableProviders && Object.values(availableProviders).filter(Boolean).length === 1)}
                   availableProviders={availableProviders}
                 />
               </div>
 
               <div className="form-section">
                 <h2>Images</h2>
-                <ImageUploader
-                  onImagesSelected={setSelectedImages}
-                  disabled={loading}
-                />
+                
+                <div className="image-uploads-container" key={formKey}>
+                    <ImageUploader
+                      label="Front Cover (Required)"
+                      helperText="Clear full front cover scan/photo"
+                      singleImage={true}
+                      onImagesSelected={setCoverImages}
+                      disabled={loading}
+                    />
+
+                    <ImageUploader
+                      label="Back Cover (Optional)"
+                      helperText="Clear full back cover scan/photo"
+                      singleImage={true}
+                      onImagesSelected={setBackImages}
+                      disabled={loading}
+                    />
+
+                    <ImageUploader
+                      label="Spine Detail (Optional)"
+                      helperText="Close-ups of the spine and staples"
+                      maxImages={3}
+                      onImagesSelected={setSpineImages}
+                      disabled={loading}
+                    />
+
+                    <ImageUploader
+                      label="Interior Pages (Optional)"
+                      helperText="First page and centerfold recommended"
+                      maxImages={5}
+                      onImagesSelected={setPageImages}
+                      disabled={loading}
+                    />
+                </div>
               </div>
 
               {error && (
@@ -168,8 +227,18 @@ export function App() {
               <button className="btn btn-secondary back-btn" onClick={() => handleReset()}>
                 ← Back to Grading
               </button>
-              <GradeReport report={report} />
-              <SaveReport report={report} />
+              <GradeReport 
+                 report={report} 
+                 comicName={comicName}
+                 issueNumber={issueNumber}
+                 coverImage={coverImages.length > 0 ? coverImages[0] : null}
+              />
+              <SaveReport 
+                 report={report} 
+                 comicName={comicName}
+                 issueNumber={issueNumber}
+                 coverImage={coverImages.length > 0 ? coverImages[0] : null}
+              />
             </div>
           )}
         </div>

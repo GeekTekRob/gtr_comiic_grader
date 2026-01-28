@@ -73,7 +73,7 @@ export async function gradeComic(params) {
     }
 
     const response = await client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       messages: [
         {
