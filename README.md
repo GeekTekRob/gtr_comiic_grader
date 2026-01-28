@@ -18,7 +18,7 @@
   <tr>
     <td width="50%">
       <h3>🧠 Multi-Model AI Analysis</h3>
-      <p>Choose your expert. Switch seamlessly between <strong>Google Gemini</strong> (Free Tier), <strong>OpenAI GPT-4o</strong>, or <strong>Anthropic Claude 3.5</strong> to find the grading style that matches your preference.</p>
+      <p>Choose your expert. Switch seamlessly between <strong>Google Gemini</strong> (Free Tier), <strong>OpenAI GPT-4o</strong>, <strong>Anthropic Claude 3.5</strong>, or <strong>Ollama Local Models</strong> to find the grading style that matches your preference.</p>
     </td>
     <td width="50%">
       <h3>📏 CGC Standard Grading</h3>
@@ -33,6 +33,16 @@
     <td width="50%">
       <h3>📄 Detailed Reporting</h3>
       <p>Generate comprehensive reports in <strong>HTML</strong>, <strong>JSON</strong>, or <strong>Markdown</strong>. Includes grading notes, defect coordinates, and improvement suggestions.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🐫 Local Vision Models (Ollama)</h3>
+      <p>Run vision models locally with <strong>Ollama</strong> - no API costs, completely private, and works offline. Perfect for privacy-conscious users or high-volume grading.</p>
+    </td>
+    <td width="50%">
+      <h3>⚡ Multiple Deployment Options</h3>
+      <p>Choose how you run it: <strong>Docker containers</strong>, <strong>local development</strong>, or <strong>cloud servers</strong> - all with the same clean, professional interface.</p>
     </td>
   </tr>
 </table>
@@ -114,6 +124,7 @@ Detailed documentation is located in the [`docs/`](docs/) folder.
 
 - [**Setup Guide**](docs/SETUP.md) - Manual installation & API key configuration.
 - [**Docker Setup**](docs/DOCKER_SETUP.md) - Advanced container configuration.
+- [**Ollama Setup**](docs/OLLAMA_SETUP.md) - Run local vision models with Ollama (free, private, offline).
 - [**API Reference**](docs/API.md) - Backend endpoints and schemas.
 
 ---

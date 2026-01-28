@@ -10,9 +10,17 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+let client = null;
+
+// Lazy initialize client only when needed
+function getClient() {
+  if (!client && process.env.ANTHROPIC_API_KEY) {
+    client = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+  }
+  return client;
+}
 
 let systemPrompt = '';
 
@@ -51,6 +59,11 @@ export async function gradeComic(params) {
       throw new Error('No images provided for grading');
     }
 
+    const apiClient = getClient();
+    if (!apiClient) {
+      throw new Error('Anthropic API key is not configured');
+    }
+
     // Prepare message content
     const content = [
       {
@@ -72,7 +85,7 @@ export async function gradeComic(params) {
       });
     }
 
-    const response = await client.messages.create({
+    const response = await apiClient.messages.create({
       model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
       max_tokens: 2000,
       messages: [

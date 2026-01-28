@@ -24,26 +24,14 @@ if errorlevel 1 (
 
 echo [1/3] Checking Node.js... OK
 
-REM Install root dependencies
-echo [2/3] Installing dependencies...
-call npm install
+REM Launch setup wizard (handles installation)
+echo [2/3] Launching setup wizard...
+call node setup.js
 if errorlevel 1 (
-    echo ERROR: Failed to install dependencies
+    echo ERROR: Setup failed
     pause
     exit /b 1
 )
-
-REM Install client dependencies
-echo [3/3] Installing client dependencies...
-cd client
-call npm install
-if errorlevel 1 (
-    echo ERROR: Failed to install client dependencies
-    cd ..
-    pause
-    exit /b 1
-)
-cd ..
 
 echo.
 echo ==========================================

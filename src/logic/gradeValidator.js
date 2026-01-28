@@ -40,15 +40,25 @@ const GRADE_LABELS = {
 export function parseGrade(gradeText) {
   if (!gradeText) return null;
 
+  // Clean up the input
+  gradeText = gradeText.toString().trim();
+  
+  console.log('[parseGrade] Parsing grade text:', gradeText);
+
   // Try to extract decimal number first
   const decimalMatch = gradeText.match(/(\d+\.?\d*)/);
   if (decimalMatch) {
     const grade = parseFloat(decimalMatch[1]);
+    console.log('[parseGrade] Extracted number:', grade);
     if (grade >= 0 && grade <= 10) {
-      return Math.round(grade * 10) / 10; // Round to nearest 0.1
+      const rounded = Math.round(grade * 10) / 10; // Round to nearest 0.1
+      console.log('[parseGrade] Final grade:', rounded);
+      return rounded;
     }
   }
 
+  // If no number found, return null
+  console.log('[parseGrade] No valid grade number found');
   return null;
 }
 
@@ -101,42 +111,92 @@ export function parseAIResponse(aiResponse) {
     rawResponse: aiResponse,
   };
 
-  // Parse GRADE line
-  const gradeMatch = aiResponse.match(/\*\*GRADE:\*\*\s*([^\n]+)/);
-  if (gradeMatch) {
+  console.log('[Parser] Parsing AI response, first 500 chars:', aiResponse.substring(0, 500));
+
+  // Parse GRADE line - more flexible pattern
+  // Matches: **GRADE:** [number] [label] or GRADE: [number] [label]
+  let gradeMatch = aiResponse.match(/\*?\*?GRADE:\*?\*?\s*([^\n]+)/i);
+  if (!gradeMatch) {
+    // Try alternative: just look for a line with a number between 0-10 followed by a grade name
+    gradeMatch = aiResponse.match(/^[\s*-]*(?:GRADE[:\s]*)?(\d+\.?\d*)\s+([^\n]+)$/mi);
+    if (gradeMatch) {
+      response.grade = parseGrade(gradeMatch[1]);
+      response.gradeLabel = `${gradeMatch[1]} ${gradeMatch[2]}`.trim();
+    }
+  } else {
     response.grade = parseGrade(gradeMatch[1]);
     response.gradeLabel = gradeMatch[1].trim();
   }
 
-  // Parse DEFECTS
-  const defectsMatch = aiResponse.match(/\*\*Defects:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]*)*)/);
+  console.log('[Parser] Parsed grade:', { grade: response.grade, gradeLabel: response.gradeLabel });
+
+  // Parse DEFECTS - more flexible, handles various formatting
+  let defectsMatch = aiResponse.match(/\*?\*?Defects?:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
   if (defectsMatch) {
     response.defects = defectsMatch[1].trim();
+  } else {
+    // Try finding after "Defects" with or without bullets
+    defectsMatch = aiResponse.match(/(?:^|\n)[\s*-]*Defects?[:\s]*(.+?)(?=\n[\s*-]*(?:Page Quality|Restoration|Repair|Prevention)|\n[\s*-]*\*\*)/is);
+    if (defectsMatch) {
+      response.defects = defectsMatch[1].trim();
+    }
   }
 
-  // Parse PAGE QUALITY
-  const pageQualityMatch = aiResponse.match(/\*\*Page Quality:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]*)*)/);
+  // Parse PAGE QUALITY - more flexible
+  let pageQualityMatch = aiResponse.match(/\*?\*?Page Quality:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
   if (pageQualityMatch) {
     response.pageQuality = pageQualityMatch[1].trim();
+  } else {
+    pageQualityMatch = aiResponse.match(/(?:^|\n)[\s*-]*Page Quality[:\s]*(.+?)(?=\n[\s*-]*(?:Restoration|Repair|Prevention)|\n[\s*-]*\*\*)/is);
+    if (pageQualityMatch) {
+      response.pageQuality = pageQualityMatch[1].trim();
+    }
   }
 
-  // Parse RESTORATION
-  const restorationMatch = aiResponse.match(/\*\*Restoration:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]*)*)/);
+  // Parse RESTORATION - more flexible
+  let restorationMatch = aiResponse.match(/\*?\*?Restoration:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
   if (restorationMatch) {
     response.restoration = restorationMatch[1].trim();
+  } else {
+    restorationMatch = aiResponse.match(/(?:^|\n)[\s*-]*Restoration[:\s]*(.+?)(?=\n[\s*-]*(?:Repair|Prevention)|\n[\s*-]*\*\*)/is);
+    if (restorationMatch) {
+      response.restoration = restorationMatch[1].trim();
+    }
   }
 
-  // Parse REPAIR/IMPROVEMENT
-  const repairMatch = aiResponse.match(/\*\*Repair\/Improvement:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]*)*)/);
+  // Parse REPAIR/IMPROVEMENT - more flexible
+  let repairMatch = aiResponse.match(/\*?\*?Repair\/Improvement:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
+  if (!repairMatch) {
+    repairMatch = aiResponse.match(/\*?\*?Repair[:\s]*/i) && aiResponse.match(/\*?\*?Repair[:\s]*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
+  }
   if (repairMatch) {
-    response.repair = repairMatch[1].trim();
+    response.repair = (repairMatch[1] || repairMatch[0]).trim();
+  } else {
+    repairMatch = aiResponse.match(/(?:^|\n)[\s*-]*(?:Repair|Improvement)[:\s]*(.+?)(?=\n[\s*-]*Prevention|\n[\s*-]*\*\*)/is);
+    if (repairMatch) {
+      response.repair = repairMatch[1].trim();
+    }
   }
 
-  // Parse PREVENTION
-  const preventionMatch = aiResponse.match(/\*\*Prevention:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]*)*)/);
+  // Parse PREVENTION - more flexible
+  let preventionMatch = aiResponse.match(/\*?\*?Prevention:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
   if (preventionMatch) {
     response.prevention = preventionMatch[1].trim();
+  } else {
+    preventionMatch = aiResponse.match(/(?:^|\n)[\s*-]*Prevention[:\s]*(.+?)$/is);
+    if (preventionMatch) {
+      response.prevention = preventionMatch[1].trim();
+    }
   }
+
+  console.log('[Parser] Parsing complete:', {
+    hasGrade: !!response.grade,
+    hasDefects: !!response.defects,
+    hasPageQuality: !!response.pageQuality,
+    hasRestoration: !!response.restoration,
+    hasRepair: !!response.repair,
+    hasPrevention: !!response.prevention,
+  });
 
   return response;
 }

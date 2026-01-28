@@ -271,6 +271,73 @@ body {
   color: #856404;
 }
 
+.ollama-info {
+  background-color: #e7f3ff;
+  border-left: 4px solid #0066cc;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 4px;
+  color: #003d99;
+}
+
+.ollama-status {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.model-count {
+  font-weight: normal;
+  color: #0066cc;
+}
+
+.models-list {
+  margin-top: 8px;
+  word-break: break-word;
+}
+
+.models-list code {
+  background-color: rgba(0, 102, 204, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.ollama-model-selector {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+.ollama-model-selector label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #0066cc;
+}
+
+.model-select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #0066cc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background-color: white;
+  cursor: pointer;
+  color: #003d99;
+}
+
+.model-select:hover {
+  border-color: #004499;
+  background-color: #f0f7ff;
+}
+
+.model-select:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+}
+
 /* Buttons */
 .button-group {
   display: flex;

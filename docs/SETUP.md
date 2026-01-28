@@ -27,7 +27,11 @@ Create a `.env` file in the project root:
 cp .env.example .env
 ```
 
-Then edit `.env` and add your API keys:
+Then edit `.env` and add your API keys. You have several options:
+
+#### Option A: Cloud-Based APIs
+
+Add at least one of the following:
 
 ```
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -37,7 +41,21 @@ PORT=5000
 NODE_ENV=development
 ```
 
-#### Getting API Keys
+#### Option B: Local Ollama (Free & Private)
+
+Skip the cloud APIs and use local vision models instead:
+
+```
+# Comment out or leave empty the cloud API keys above
+OLLAMA_API_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2-vision
+PORT=5000
+NODE_ENV=development
+```
+
+See [Ollama Setup Guide](OLLAMA_SETUP.md) for detailed instructions.
+
+#### Getting Cloud API Keys
 
 **Google Gemini:**
 

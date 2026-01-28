@@ -10,6 +10,7 @@ export function App() {
   const [comicName, setComicName] = useState('');
   const [issueNumber, setIssueNumber] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
+  const [selectedOllamaModel, setSelectedOllamaModel] = useState('');
   
   // New separated image states
   const [coverImages, setCoverImages] = useState([]);
@@ -18,6 +19,7 @@ export function App() {
   const [pageImages, setPageImages] = useState([]);
   
   const [availableProviders, setAvailableProviders] = useState(null);
+  const [ollamaInfo, setOllamaInfo] = useState(null);
   const [formKey, setFormKey] = useState(0); // For resetting form components
 
   const { loading, error, report, progress, submitGradingRequest, clearError, clearReport } = useGrader();
@@ -28,6 +30,13 @@ export function App() {
       try {
         const health = await checkHealth();
         setAvailableProviders(health.providers);
+        if (health.ollama) {
+          setOllamaInfo(health.ollama);
+          // Auto-select first available model if available
+          if (health.ollama.models && health.ollama.models.length > 0) {
+            setSelectedOllamaModel(health.ollama.models[0]);
+          }
+        }
 
         // Auto-select if only one provider is available
         const activeProviders = Object.entries(health.providers)
@@ -63,6 +72,11 @@ export function App() {
       return;
     }
 
+    if (selectedProvider === 'ollama' && !selectedOllamaModel) {
+      alert('Please select an Ollama model');
+      return;
+    }
+
     if (coverImages.length === 0) {
       alert('Cover Image is required');
       return;
@@ -72,6 +86,11 @@ export function App() {
     formData.append('comicName', comicName);
     formData.append('issueNumber', issueNumber);
     formData.append('aiProvider', selectedProvider);
+    
+    // Include model selection for Ollama
+    if (selectedProvider === 'ollama' && selectedOllamaModel) {
+      formData.append('ollamaModel', selectedOllamaModel);
+    }
 
     // Combine images ensuring Cover is first
     const allImages = [...coverImages, ...spineImages, ...backImages, ...pageImages];
@@ -93,6 +112,7 @@ export function App() {
     setComicName('');
     setIssueNumber('');
     setSelectedProvider('');
+    setSelectedOllamaModel('');
     setCoverImages([]);
     setSpineImages([]);
     setBackImages([]);
@@ -152,6 +172,9 @@ export function App() {
                   onProviderChange={setSelectedProvider}
                   disabled={loading || (availableProviders && Object.values(availableProviders).filter(Boolean).length === 1)}
                   availableProviders={availableProviders}
+                  ollamaInfo={ollamaInfo}
+                  selectedOllamaModel={selectedOllamaModel}
+                  onOllamaModelChange={setSelectedOllamaModel}
                 />
               </div>
 
