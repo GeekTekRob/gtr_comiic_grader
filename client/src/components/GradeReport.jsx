@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import Markdown from 'react-markdown';
+import { SaveReport } from './SaveReport';
 
 export function GradeReport({ report, comicName, issueNumber, coverImage }) {
   const [coverUrl, setCoverUrl] = useState('');
@@ -24,24 +26,30 @@ export function GradeReport({ report, comicName, issueNumber, coverImage }) {
 
   return (
     <div className="report success">
-      <div className="report-header-info">
-        {coverUrl && (
-          <div className="report-cover-image">
-             <img src={coverUrl} alt="Comic Cover" />
-          </div>
-        )}
-        <div className="report-title-section">
-            <h1>{comicName}</h1>
-            <h2>Issue #{issueNumber}</h2>
-        </div>
+      <div className="report-export-header">
+        <SaveReport report={report} comicName={comicName} issueNumber={issueNumber} coverImage={coverImage} />
       </div>
 
-      <div className="grade-header">
-        <div className="grade-display">
-          <div className="grade-number">{grade}</div>
-          <div className="grade-label">{gradeLabel}</div>
+      <div className="report-banner">
+        <div className="report-banner-left">
+          {coverUrl && (
+            <div className="report-cover-mini">
+               <img src={coverUrl} alt="Comic Cover" />
+            </div>
+          )}
+          <div className="report-meta">
+              <h1>{comicName}</h1>
+              <h2>Issue #{issueNumber}</h2>
+          </div>
         </div>
-        <div className="provider-badge">{report.provider}</div>
+
+        <div className="report-banner-right">
+             <div className="grade-box">
+                 <span className="grade-number">{grade}</span>
+                 <span className="grade-label">{gradeLabel}</span>
+             </div>
+             <div className="provider-badge-small">{report.provider}</div>
+        </div>
       </div>
 
       <div className="analysis-section">
@@ -49,17 +57,17 @@ export function GradeReport({ report, comicName, issueNumber, coverImage }) {
 
         <div className="analysis-item">
           <h4>Defects</h4>
-          <p>{analysis.defects}</p>
+          <div className="md-content"><Markdown>{analysis.defects}</Markdown></div>
         </div>
 
         <div className="analysis-item">
           <h4>Page Quality</h4>
-          <p>{analysis.pageQuality}</p>
+          <div className="md-content"><Markdown>{analysis.pageQuality}</Markdown></div>
         </div>
 
         <div className="analysis-item">
           <h4>Restoration</h4>
-          <p>{analysis.restoration}</p>
+          <div className="md-content"><Markdown>{analysis.restoration}</Markdown></div>
         </div>
       </div>
 
@@ -68,12 +76,12 @@ export function GradeReport({ report, comicName, issueNumber, coverImage }) {
 
         <div className="suggestion-item">
           <h4>Repair / Improvement</h4>
-          <p>{suggestions.repair}</p>
+          <div className="md-content"><Markdown>{suggestions.repair}</Markdown></div>
         </div>
 
         <div className="suggestion-item">
           <h4>Prevention</h4>
-          <p>{suggestions.prevention}</p>
+          <div className="md-content"><Markdown>{suggestions.prevention}</Markdown></div>
         </div>
       </div>
 

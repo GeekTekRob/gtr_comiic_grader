@@ -144,7 +144,6 @@ export function ImageUploader({
           <div className="upload-icon">📷</div>
           <h3>{label}</h3>
           <p>{helperText}</p>
-          <p className="file-hint">Supported: JPG, PNG, WebP (Max 10 MB each, {singleImage ? '1 image' : `up to ${maxImages} images`})</p>
         </label>
       </div>
 
