@@ -4,7 +4,7 @@
 
 The GTR Comic Grader API provides endpoints for submitting comics for AI-powered grading using CGC standards.
 
-**Base URL**: `http://localhost:5000/api`
+**Base URL**: `http://localhost:5000/api'
 
 ## Authentication
 

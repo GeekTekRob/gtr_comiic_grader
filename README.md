@@ -2,7 +2,7 @@
 
 > **Professional AI-Powered Comic Book Grading & Restoration Detection**
 
-[![Node.js CI](https://github.com/GeekTekRob/gtr_comiic_grader/actions/workflows/node.js.yml/badge.svg)](https://github.com/GeekTekRob/gtr_comiic_grader/actions)
+[![Node.js CI](https://github.com/GeekTekRob/gtr_comic_grader/actions/workflows/node.js.yml/badge.svg)](https://github.com/GeekTekRob/gtr_comic_grader/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![React](https://img.shields.io/badge/react-%2320232a.svg?style=flat&logo=react&logoColor=%2361DAFB)](https://reactjs.org/)

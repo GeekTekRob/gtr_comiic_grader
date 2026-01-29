@@ -100,7 +100,7 @@ npm start
 ## Project Structure
 
 ```
-gtr_comiic_grader/
+gtr_comic_grader/
 ├── src/
 │   ├── server.js              # Express server
 │   ├── api/
