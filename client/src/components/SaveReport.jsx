@@ -80,19 +80,30 @@ export function SaveReport({ report, comicName, issueNumber, coverImage }) {
 
   return (
     <div className="save-section">
-      <h3>Export Report</h3>
-      <div className="button-group">
-        <button className="btn btn-secondary" onClick={() => downloadReport('json')} disabled={saving}>
-          📄 Download as JSON
+      <div className="export-button-group">
+        <button 
+          className="export-btn" 
+          onClick={() => downloadReport('json')} 
+          disabled={saving}
+          title="Download as JSON"
+        >
+          📄
         </button>
-        <button className="btn btn-secondary" onClick={() => downloadReport('markdown')} disabled={saving}>
-          📝 Download as Markdown
+        <button 
+          className="export-btn" 
+          onClick={() => downloadReport('html')} 
+          disabled={saving}
+          title="Print or Save as PDF"
+        >
+          🖨️
         </button>
-        <button className="btn btn-secondary" onClick={() => downloadReport('html')} disabled={saving}>
-          🌐 Download as HTML
-        </button>
-        <button className="btn btn-secondary" onClick={() => downloadReport('txt')} disabled={saving}>
-          📋 Download as Text
+        <button 
+          className="export-btn" 
+          onClick={() => downloadReport('txt')} 
+          disabled={saving}
+          title="Download as Text"
+        >
+          📋
         </button>
       </div>
     </div>

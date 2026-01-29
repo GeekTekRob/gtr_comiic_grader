@@ -164,29 +164,17 @@ export function parseAIResponse(aiResponse) {
     }
   }
 
-  // Parse REPAIR/IMPROVEMENT - more flexible
-  let repairMatch = aiResponse.match(/\*?\*?Repair\/Improvement:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
-  if (!repairMatch) {
-    repairMatch = aiResponse.match(/\*?\*?Repair[:\s]*/i) && aiResponse.match(/\*?\*?Repair[:\s]*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
-  }
+  // Parse REPAIR/IMPROVEMENT - more flexible including inline Prevention stop
+  let repairMatch = aiResponse.match(/\*?\*?Repair(?:\/Improvement)?:\*?\*?\s*([\s\S]+?)(?=\s*(?:\n\s*)*\*?\*?Prevention:|\n\s*\*?\*?[A-Z][a-z]+:|$)/i);
+  
   if (repairMatch) {
-    response.repair = (repairMatch[1] || repairMatch[0]).trim();
-  } else {
-    repairMatch = aiResponse.match(/(?:^|\n)[\s*-]*(?:Repair|Improvement)[:\s]*(.+?)(?=\n[\s*-]*Prevention|\n[\s*-]*\*\*)/is);
-    if (repairMatch) {
-      response.repair = repairMatch[1].trim();
-    }
+    response.repair = repairMatch[1].trim();
   }
 
   // Parse PREVENTION - more flexible
-  let preventionMatch = aiResponse.match(/\*?\*?Prevention:\*?\*?\s*([^\n]+(?:\n(?![\s*]*\*?\*?[A-Z])[^\n]*)*)/i);
+  let preventionMatch = aiResponse.match(/\*?\*?Prevention:\*?\*?\s*([\s\S]+?)(?=\n\s*\*?\*?[A-Z][a-z]+:|$)/i);
   if (preventionMatch) {
     response.prevention = preventionMatch[1].trim();
-  } else {
-    preventionMatch = aiResponse.match(/(?:^|\n)[\s*-]*Prevention[:\s]*(.+?)$/is);
-    if (preventionMatch) {
-      response.prevention = preventionMatch[1].trim();
-    }
   }
 
   console.log('[Parser] Parsing complete:', {

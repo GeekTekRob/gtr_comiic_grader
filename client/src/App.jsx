@@ -108,6 +108,15 @@ export function App() {
     await submitGradingRequest(formData);
   };
 
+  const isFormValid = () => {
+    if (!comicName.trim()) return false;
+    if (!issueNumber.trim()) return false;
+    if (!selectedProvider) return false;
+    if (selectedProvider === 'ollama' && !selectedOllamaModel) return false;
+    if (coverImages.length === 0) return false;
+    return true;
+  };
+
   const handleReset = () => {
     setComicName('');
     setIssueNumber('');
@@ -126,8 +135,7 @@ export function App() {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <h1>🎨 GTR Comic Grader</h1>
-          <p>Professional AI-Powered Comic Book Grading</p>
+          <img src="/gtr_comic_grader_logo.webp" alt="GTR Comic Grader" className="header-logo" />
         </div>
       </header>
 
@@ -231,7 +239,7 @@ export function App() {
                 <button
                   type="submit"
                   className="btn btn-primary"
-                  disabled={loading || !availableProviders || (!availableProviders.gemini && !availableProviders.openai && !availableProviders.anthropic)}
+                  disabled={loading || !isFormValid()}
                 >
                   {loading ? 'Grading...' : '📊 Get Grade Report'}
                 </button>
@@ -251,12 +259,6 @@ export function App() {
                 ← Back to Grading
               </button>
               <GradeReport 
-                 report={report} 
-                 comicName={comicName}
-                 issueNumber={issueNumber}
-                 coverImage={coverImages.length > 0 ? coverImages[0] : null}
-              />
-              <SaveReport 
                  report={report} 
                  comicName={comicName}
                  issueNumber={issueNumber}
